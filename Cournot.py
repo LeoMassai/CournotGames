@@ -40,17 +40,17 @@ class cournot:
             for j in range(n):
                 q = cp.Variable(m)
                 qim = np.delete(qt, j, 0)
-                objective = cp.Maximize(q @ (a - b * (B * ft + qim.sum(axis=0))) -
-                                        cp.norm1(b * cp.square(q) + cost[j, :] * cp.square(q)))
+                objective = cp.Maximize(q @ (a - cp.multiply(b, (cp.multiply(B, ft) + qim.sum(axis=0)))) -
+                                        cp.norm1(cp.multiply(b, cp.square(q)) + cp.multiply(cost[j, :], cp.square(q))))
                 constraints = [0 <= q]
                 prob = cp.Problem(objective, constraints)
                 qs = prob.solve()
                 qt[j, :] = q.value
 
             f = cp.Variable(l)
-            objective2 = cp.Maximize(sum(a * (B * f + qt.sum(axis=0))
-                                         - b / 2 * cp.square((B * f + qt.sum(axis=0))) -
-                                         sum(cp.multiply(cost, cp.square(qt)))))
+            objective2 = cp.Maximize(sum(cp.multiply(a, (cp.multiply(B, f) + qt.sum(axis=0)))
+                                         - cp.multiply(b / 2, cp.square((cp.multiply(B, f) + qt.sum(axis=0))) -
+                                                       sum(cp.multiply(cost, cp.square(qt))))))
             constraints2 = [-c <= f, f <= c]
             prob2 = cp.Problem(objective2, constraints2)
             ft = prob2.solve()
