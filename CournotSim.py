@@ -9,9 +9,7 @@ q0 = np.random.rand(2, 2)
 
 f0 = np.random.rand(1)
 c = 1
-B = np.array([-1, 1])
-B = np.atleast_2d(B)
-B = B.transpose()
+B = np.array([[-1], [1]])
 cost = np.array([[8, 11], [5, 8]])
 a = np.array([22, 33])
 b = np.array([9, 3])
