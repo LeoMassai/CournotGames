@@ -12,15 +12,14 @@ class cournot:
         self.a = a
         self.b = b
         self.c = c
-        self.m = self.B.shape[1]
+        self.m = self.B.shape[0]
         self.n = Q.shape[0]
-        self.l = self.B.shape[0]
+        self.l = self.B.shape[1]
 
     def equilibrium(self, sep):
         q0 = self.Q.copy()
         f0 = self.f.copy()
         B = self.B
-        B = B.squeeze()
         n = self.n
         m = self.m
         a = self.a
@@ -41,14 +40,14 @@ class cournot:
                 q = cp.Variable(m)
                 qim = np.delete(qt, j, 0)
                 if sep == 1:
-                    objective = cp.Maximize(q @ (a - cp.multiply(b, (cp.multiply(B, ft) + qim.sum(axis=0)))) -
+                    objective = cp.Maximize(q @ (a - cp.multiply(b, (B@ft + qim.sum(axis=0)))) -
                                             cp.sum(
                                                 cp.multiply(b, cp.square(q)) + cp.multiply(cost[j, :], cp.square(q))))
                 else:
-                    objective = cp.Maximize(q @ (a - cp.multiply(b, (cp.multiply(B, ft) + qim.sum(axis=0)))) -
+                    objective = cp.Maximize(q @ (a - cp.multiply(b, (B@ft + qim.sum(axis=0)))) -
                                             cp.sum(
                                                 cp.multiply(b, cp.square(q))) - cp.square(
-                        cp.sum(cp.multiply(cost[j, :], cp.square(q)))))
+                        cp.sum(cp.multiply(cost[j, :], q))))
                 constraints = [0 <= q]
                 prob = cp.Problem(objective, constraints)
                 qs = prob.solve()
@@ -56,13 +55,13 @@ class cournot:
 
             f = cp.Variable(l)
             if sep == 1:
-                objective2 = cp.Maximize(cp.sum(cp.multiply(a, (cp.multiply(B, f) + qt.sum(axis=0)))
-                                                - cp.multiply(b / 2, cp.square((cp.multiply(B, f) + qt.sum(axis=0)))) -
+                objective2 = cp.Maximize(cp.sum(cp.multiply(a, (B@f + qt.sum(axis=0)))
+                                                - cp.multiply(b / 2, cp.square((B@f + qt.sum(axis=0)))) -
                                                 cp.sum(cp.multiply(cost, cp.square(qt)))))
             else:
-                objective2 = cp.Maximize(cp.sum(cp.multiply(a, (cp.multiply(B, f) + qt.sum(axis=0)))
-                                                - cp.multiply(b / 2, cp.square((cp.multiply(B, f) + qt.sum(axis=0))))) -
-                                         cp.sum(cp.square(cp.sum(cp.multiply(cost, cp.square(qt)), 1))))
+                objective2 = cp.Maximize(cp.sum(cp.multiply(a, (B@f + qt.sum(axis=0)))
+                                                - cp.multiply(b / 2, cp.square((B@f + qt.sum(axis=0))))) -
+                                         cp.sum(cp.square(cp.sum(cp.multiply(cost, qt), 1))))
             constraints2 = [-c <= f, f <= c]
             prob2 = cp.Problem(objective2, constraints2)
             ft = prob2.solve()

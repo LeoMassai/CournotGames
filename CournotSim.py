@@ -3,15 +3,17 @@ import cvxpy as cp
 from numpy import linalg as la
 from Cournot import cournot
 
-sep = 1  # put 1 if you want separable production costs, anything else for non-separable costs
+sep = 2  # put 1 if you want separable production costs, anything else for non-separable costs
 
 q0 = np.random.rand(2, 2)
 
 f0 = np.random.rand(1)
-c = 8
+c = 1
 B = np.array([-1, 1])
-cost = np.array([[7, 11], [5, 2]])
-a = np.array([12, 33])
+B = np.atleast_2d(B)
+B = B.transpose()
+cost = np.array([[8, 11], [5, 8]])
+a = np.array([22, 33])
 b = np.array([9, 3])
 
 s = cournot(q0, f0, B, cost, a, b, c)
@@ -19,7 +21,7 @@ s = cournot(q0, f0, B, cost, a, b, c)
 eq, peq = s.equilibrium(sep)
 
 q1 = np.random.rand(1, 2)
-cost1 = np.array([7, 4])
+cost1 = np.array([7, 11])
 
 s1 = cournot(q1, f0, B, cost1, a, b, c)
 
