@@ -52,8 +52,8 @@ def costreshape(C):
 
 # Set the number of nodes and links
 n = 8
-m = 4
-l = 6
+m = 11
+l = 18
 
 # Generate the random connected graph
 G = generate_connected_graph(m, l)
@@ -66,6 +66,7 @@ nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_si
 edge_labels = nx.get_edge_attributes(G, 'weight')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 
+
 plt.title("Random Connected Graph")
 plt.axis('off')
 plt.show()
@@ -75,7 +76,7 @@ sep = 1  # put 1 if you want separable production costs, anything else for non-s
 q0 = np.random.rand(n, m)
 
 f0 = np.random.rand(l)
-c = 3 * np.ones((l,1))
+c = 3 * np.ones(l)
 B = inc_mat
 cost = 9 * np.random.rand(n, m)
 a = 33 * np.random.rand(m)
@@ -92,7 +93,7 @@ b = 7 * np.random.rand(m)
 
 # print(peq, peq2)
 # print(d, d2)
-
+edges = sorted(G.edges())
 H = np.eye(m)
 for k in range(n - 1):
     H = np.vstack((H, np.eye(m)))
@@ -100,10 +101,25 @@ for k in range(n - 1):
 cost1 = cost.flatten()
 qs = np.random.rand(m * n)
 qs = np.expand_dims(qs, 1)
-a = np.expand_dims(a, 1)
-b = np.expand_dims(b, 1)
+#a = np.expand_dims(a, 1)
+#b = np.expand_dims(b, 1)
+cost1=cost1.squeeze()
 
 ss = cournot1(B, H, cost1, a, b, c)
 
-eqs, peqs, ds, w = ss.equilibrium()
+#eqs, peqs, ds, w = ss.equilibrium(c)
+
+
+cap=np.linspace(0.7, 190, num=200)
+h=0
+w=np.zeros(200)
+for i in cap:
+    aa, w[h], aa, aa, aa = ss.capopt(i)
+    h=h+1
+
+plt.figure()
+plt.plot(cap, w, label='Welfare')
+plt.show()
+
+
 
