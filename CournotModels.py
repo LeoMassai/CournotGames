@@ -189,27 +189,33 @@ class cournot1:
         a = self.a
         b = self.b
         H = self.H
+        m = self.m
         cost = self.cost
         l = self.l
+        pinvB = np.linalg.pinv(B)
         c = cap
-        f = cp.Variable(l)
+        r = cp.Variable(m)
         q = cp.Variable(n)
-        objective = cp.Maximize(cp.sum(cp.multiply(a, (B @ f + H.T @ q))
-                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q))) -
+        w = cp.Variable(l)
+        objective = cp.Maximize(cp.sum(cp.multiply(a, (r + H.T @ q))
+                                       - cp.multiply(b / 2, cp.square((r + H.T @ q))) -
                                        cp.sum(cp.multiply(cost, cp.square(q)))) -
                                 1 / 2 * cp.sum(cp.multiply(b, H.T @ cp.square(q))))
-        constraints = [0 <= q, 0 <= f, f <= c]
+        constraints = [0 <= q, 0 <= pinvB @ r + (np.identity(l) - pinvB@B) @ w,
+                       pinvB @ r + (np.identity(l) - pinvB@B) @ w <= c,
+                       cp.sum(r) == 0]
         prob = cp.Problem(objective, constraints)
         qs = prob.solve()
-        fo = f.value
+        ro = r.value
         qo = q.value
-        w = np.sum(np.multiply(a, (B @ fo + H.T @ qo))
-                   - np.multiply(b / 2, np.square((B @ fo + H.T @ qo))) -
+        wo = w.value
+        w = np.sum(np.multiply(a, (ro + H.T @ qo))
+                   - np.multiply(b / 2, np.square((ro + H.T @ qo))) -
                    np.sum(np.multiply(cost, np.square(qo))))  # Marshallian welfare at equilibrium
-        sol = np.array((qo, fo), dtype=object)  # Equilibrium point
-        peq = a - b * (B @ fo + H.T @ qo)  # Equilibrium prices
+        sol = np.array((qo, ro), dtype=object)  # Equilibrium point
+        peq = a - b * (ro + H.T @ qo)  # Equilibrium prices
 
-        d = B @ fo + H.T @ qo  # Consumption in each market at equilibrium
+        d = ro + H.T @ qo  # Consumption in each market at equilibrium
 
         return sol, peq, d, w
 

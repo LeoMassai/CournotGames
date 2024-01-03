@@ -1,62 +1,42 @@
-import numpy as np
 import matplotlib.pyplot as plt
+# matplotlib.use("pgf")
+# matplotlib.rcParams.update({
+#     "pgf.texsystem": "pdflatex",
+#     'font.family': 'serif',
+#     'text.usetex': True,
+#     'pgf.rcfonts': False,
+# })
 import networkx as nx
-import cvxpy as cp
-from numpy import linalg as la
-from Cournot import cournot, cournot1, cournotStack
+import numpy as np
+import pickle
+import random
 
+from CournotModels import cournot1, generate_connected_graph, incidence_matrix, generate_connected_directed_graph
 
-def generate_connected_graph(n, l):
-    G = nx.DiGraph()
-
-    # Generate a connected graph with n nodes
-    G.add_nodes_from(range(1, n + 1))
-    for i in range(1, n):
-        G.add_edge(i, i + 1)
-
-    # Add remaining edges until l links are reached
-    while G.number_of_edges() < l:
-        u = np.random.randint(1, n)
-        v = np.random.randint(1, n)
-        if u != v and not G.has_edge(u, v):
-            G.add_edge(u, v)
-
-    return G
-
-
-def incidence_matrix(G):
-    nodes = sorted(G.nodes())
-    edges = sorted(G.edges())
-
-    node_index = {node: i for i, node in enumerate(nodes)}
-
-    incidence_mat = np.zeros((len(nodes), len(edges)), dtype=int)
-    for j, edge in enumerate(edges):
-        u, v = edge
-        incidence_mat[node_index[u]][j] = -1
-        incidence_mat[node_index[v]][j] = 1
-
-    return incidence_mat
-
-
-def costreshape(C):
-    n = C.shape[0]
-    m = C.shape[1]
-    Ce = 999 * np.ones((n * m, m))
-    for k in range(n):
-        matrix = 9999 * np.ones((m, m))
-        np.fill_diagonal(matrix, C[k, :])
-        Ce[k * m:k * m + m, :] = matrix
-    return Ce
-
+random.seed(3)
+np.random.seed(0)
 
 # Set the number of nodes and links
-n = 8
-m = 11
-l = 18
+n = 9  # producers
+m = 7  # markets (nodes)
+l = 14  # links
 
 # Generate the random connected graph
-G = generate_connected_graph(m, l)
+G = generate_connected_directed_graph(m, l)
+
+# Generate a directed random graph
+# G = nx.gnp_random_graph(m, 0.5, directed=True)
+#
+# # Create a DAG from the random graph
+# DAG = nx.DiGraph([(u, v) for (u, v) in G.edges() if u < v])
+# # Ensure the generated DAG is connected
+# while not nx.is_weakly_connected(DAG):
+#     G = nx.gnp_random_graph(m, 0.5, directed=True)
+#     DAG = nx.DiGraph([(u, v) for (u, v) in G.edges() if u < v])
+#
+# G = DAG
+m = G.number_of_nodes()
+l = G.number_of_edges()
 
 # Generate the incidence matrix
 inc_mat = incidence_matrix(G)
@@ -65,7 +45,6 @@ pos = nx.spring_layout(G)
 nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10, arrows=True)
 edge_labels = nx.get_edge_attributes(G, 'weight')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
-
 
 plt.title("Random Connected Graph")
 plt.axis('off')
@@ -81,7 +60,6 @@ B = inc_mat
 cost = 9 * np.random.rand(n, m)
 a = 33 * np.random.rand(m)
 b = 7 * np.random.rand(m)
-
 
 # coste = costreshape(cost)
 #
@@ -101,25 +79,58 @@ for k in range(n - 1):
 cost1 = cost.flatten()
 qs = np.random.rand(m * n)
 qs = np.expand_dims(qs, 1)
-#a = np.expand_dims(a, 1)
-#b = np.expand_dims(b, 1)
-cost1=cost1.squeeze()
+# a = np.expand_dims(a, 1)
+# b = np.expand_dims(b, 1)
+cost1 = cost1.squeeze()
 
 ss = cournot1(B, H, cost1, a, b, c)
+eqs, peqs, ds, ws = ss.equilibrium(c)
 
-#eqs, peqs, ds, w = ss.equilibrium(c)
+# %% Equilibrium Computations
 
 
-cap=np.linspace(0.7, 190, num=200)
-h=0
-w=np.zeros(200)
+sample = 22
+cap = np.linspace(2, 32, num=sample)
+h = 0
+w = np.zeros(sample)
+wm = np.zeros(sample)
+links = np.zeros((l, sample))
+peq = np.zeros((m, sample))
+fe = peq
 for i in cap:
-    aa, w[h], aa, aa, aa = ss.capopt(i)
-    h=h+1
+    links[:, h], w[h], ft, peq[:, h], d, wm[h] = ss.capopt(i)
+    fe[:, h] = ft[1]
+    h = h + 1
+
+r = fe
 
 plt.figure()
 plt.plot(cap, w, label='Welfare')
 plt.show()
+plt.plot(cap, wm, label='Welfare')
+plt.show()
 
+plt.figure()
+plt.plot(cap, links.T)
+plt.show()
 
+plt.figure()
+plt.plot(cap, fe.T)
+plt.show()
 
+plt.figure()
+plt.plot(cap, peq.T)
+plt.show()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+lines = ax1.plot(cap, r.T, label='Open values')
+fig.set_size_inches(3.16, 3.5, forward=True)
+plt.savefig('test.pgf')
+plt.show()
+
+# %%
+fl = links[:, -1]
+eqs, peqs, ds, ws = ss.equilibrium(fl)
+
+lt, wt, ftt, peqt, dt, wmt = ss.capopt(99)
