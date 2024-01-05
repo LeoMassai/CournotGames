@@ -54,13 +54,16 @@ plt.show()
 
 sep = 1  # put 1 if you want separable production costs, anything else for non-separable costs
 
+random.seed(3)
+np.random.seed(56)
+
 q0 = np.random.rand(n, m)
 
 f0 = np.random.rand(l)
 c = 3 * np.ones(l)
 B = inc_mat
 # cost = 9 * np.random.rand(n, m)
-a = 33 * np.random.rand(m)
+a = 28 * np.random.rand(m)
 b = 7 * np.random.rand(m)
 cost = 9 * np.random.rand(n)
 
