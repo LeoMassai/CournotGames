@@ -10,8 +10,10 @@ import networkx as nx
 import numpy as np
 import pickle
 import random
+import copy
 
-from CournotModels import cournot1, generate_connected_graph, incidence_matrix, generate_connected_directed_graph
+from CournotModels import (cournot1, generate_connected_graph, incidence_matrix, generate_connected_directed_graph,
+                           generate_row_stochastic_matrix)
 
 random.seed(3)
 np.random.seed(0)
@@ -57,9 +59,10 @@ q0 = np.random.rand(n, m)
 f0 = np.random.rand(l)
 c = 3 * np.ones(l)
 B = inc_mat
-cost = 9 * np.random.rand(n, m)
+# cost = 9 * np.random.rand(n, m)
 a = 33 * np.random.rand(m)
 b = 7 * np.random.rand(m)
+cost = 9 * np.random.rand(n)
 
 # coste = costreshape(cost)
 #
@@ -72,9 +75,11 @@ b = 7 * np.random.rand(m)
 # print(peq, peq2)
 # print(d, d2)
 edges = sorted(G.edges())
-H = np.eye(m)
-for k in range(n - 1):
-    H = np.vstack((H, np.eye(m)))
+# H = np.zeros((n, m))
+# for k in range(n - 1):
+#     H = np.vstack((H, np.eye(m)))
+
+H = generate_row_stochastic_matrix(n, m)
 
 cost1 = cost.flatten()
 qs = np.random.rand(m * n)
@@ -83,26 +88,41 @@ qs = np.expand_dims(qs, 1)
 # b = np.expand_dims(b, 1)
 cost1 = cost1.squeeze()
 
-ss = cournot1(B, H, cost1, a, b, c)
+ss = cournot1(B, H, cost, a, b, c)
 eqs, peqs, ds, ws = ss.equilibrium(c)
+
+fla = copy.deepcopy(eqs[1])
+
+# fla[10] = fla[10] - fla[5]
+# # fla[9] = fla[9] - fla[6]
+# fla[5] = 0
+# #
+# # eqsa, peqsa, dsa, wsa = ss.equilibrium(fla)
+# #
+# fl = eqs[1]
+# qo = eqs[0]
+# w = np.sum(np.multiply(a, (B @ fla + H.T @ qo))
+#            - np.multiply(b / 2, np.square((B @ fla + H.T @ qo))) -
+#            np.sum(np.multiply(cost, np.square(qo))))
 
 # %% Equilibrium Computations
 
 
-sample = 22
-cap = np.linspace(2, 32, num=sample)
+sample = 18
+cap = np.linspace(2, 37, num=sample)
 h = 0
 w = np.zeros(sample)
 wm = np.zeros(sample)
 links = np.zeros((l, sample))
 peq = np.zeros((m, sample))
-fe = peq
+fe = np.zeros((l, sample))
 for i in cap:
     links[:, h], w[h], ft, peq[:, h], d, wm[h] = ss.capopt(i)
     fe[:, h] = ft[1]
     h = h + 1
 
-r = fe
+r = B @ fe
+diff = wm - w
 
 plt.figure()
 plt.plot(cap, w, label='Welfare')
@@ -115,11 +135,15 @@ plt.plot(cap, links.T)
 plt.show()
 
 plt.figure()
-plt.plot(cap, fe.T)
+plt.plot(cap, r.T)
 plt.show()
 
 plt.figure()
 plt.plot(cap, peq.T)
+plt.show()
+
+plt.figure()
+plt.plot(cap, diff)
 plt.show()
 
 fig = plt.figure()
@@ -133,4 +157,6 @@ plt.show()
 fl = links[:, -1]
 eqs, peqs, ds, ws = ss.equilibrium(fl)
 
-lt, wt, ftt, peqt, dt, wmt = ss.capopt(99)
+lt, wt, ftt, peqt, dt, wmt = ss.capopt(130)
+
+# %%

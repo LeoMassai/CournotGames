@@ -11,6 +11,23 @@ random.seed(3)
 np.random.seed(0)
 
 
+def generate_row_stochastic_matrix(n, m):
+    matrix = np.zeros((n, m))
+    list = [item for item in range(0, m)]
+    for i in range(n):
+        if len(list) > 0.5:
+            re = random.choice(list)
+            reindex = list.index(re)
+            list.pop(reindex)
+            matrix[i, re] = 1
+        else:
+            list = [item for item in range(0, m)]
+            re = random.choice(list)
+            matrix[i, re] = 1
+
+    return matrix
+
+
 def generate_connected_directed_graph(num_nodes, num_edges):
     # Ensure num_edges is valid for a directed graph
     if num_edges < num_nodes - 1:
@@ -192,30 +209,26 @@ class cournot1:
         m = self.m
         cost = self.cost
         l = self.l
-        pinvB = np.linalg.pinv(B)
         c = cap
-        r = cp.Variable(m)
+        f = cp.Variable(l)
         q = cp.Variable(n)
-        w = cp.Variable(l)
-        objective = cp.Maximize(cp.sum(cp.multiply(a, (r + H.T @ q))
-                                       - cp.multiply(b / 2, cp.square((r + H.T @ q))) -
+        objective = cp.Maximize(cp.sum(cp.multiply(a, (B @ f + H.T @ q))
+                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q))) -
                                        cp.sum(cp.multiply(cost, cp.square(q)))) -
                                 1 / 2 * cp.sum(cp.multiply(b, H.T @ cp.square(q))))
-        constraints = [0 <= q, 0 <= pinvB @ r + (np.identity(l) - pinvB@B) @ w,
-                       pinvB @ r + (np.identity(l) - pinvB@B) @ w <= c,
-                       cp.sum(r) == 0]
+        constraints = [0 <= q, 0 <= f,
+                       f <= c]
         prob = cp.Problem(objective, constraints)
         qs = prob.solve()
-        ro = r.value
+        fo = f.value
         qo = q.value
-        wo = w.value
-        w = np.sum(np.multiply(a, (ro + H.T @ qo))
-                   - np.multiply(b / 2, np.square((ro + H.T @ qo))) -
+        w = np.sum(np.multiply(a, (B @ fo + H.T @ qo))
+                   - np.multiply(b / 2, np.square((B @ fo + H.T @ qo))) -
                    np.sum(np.multiply(cost, np.square(qo))))  # Marshallian welfare at equilibrium
-        sol = np.array((qo, ro), dtype=object)  # Equilibrium point
-        peq = a - b * (ro + H.T @ qo)  # Equilibrium prices
+        sol = np.array((qo, fo), dtype=object)  # Equilibrium point
+        peq = a - b * (B @ fo + H.T @ qo)  # Equilibrium prices
 
-        d = ro + H.T @ qo  # Consumption in each market at equilibrium
+        d = B @ fo + H.T @ qo  # Consumption in each market at equilibrium
 
         return sol, peq, d, w
 
@@ -240,7 +253,7 @@ class cournot1:
 
         linear_constraint = LinearConstraint(np.ones((1, l)), -np.inf, theta)
 
-        bounds = [[0, theta] for i in range(l)]
+        bounds = [[0, 2 * theta] for i in range(l)]
 
         # Initial guess
         x0 = np.random.rand() * np.ones(self.l)
