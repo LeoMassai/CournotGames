@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
-# matplotlib.use("pgf")
-# matplotlib.rcParams.update({
-#     "pgf.texsystem": "pdflatex",
-#     'font.family': 'serif',
-#     'text.usetex': True,
-#     'pgf.rcfonts': False,
-# })
+
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif"
+})
+
+plt.rcParams["figure.autolayout"] = True
 import networkx as nx
 import numpy as np
 import pickle
@@ -15,13 +15,17 @@ import copy
 from CournotModels import (cournot1, generate_connected_graph, incidence_matrix, generate_connected_directed_graph,
                            generate_row_stochastic_matrix)
 
-random.seed(3)
-np.random.seed(0)
+# 3
+# 0
+random.seed(13)
+np.random.seed(44)
+
+# 9, 7, 14
 
 # Set the number of nodes and links
-n = 9  # producers
-m = 7  # markets (nodes)
-l = 14  # links
+n = 14  # producers
+m = 8  # markets (nodes)
+l = 16  # links
 
 # Generate the random connected graph
 G = generate_connected_directed_graph(m, l)
@@ -54,8 +58,10 @@ plt.show()
 
 sep = 1  # put 1 if you want separable production costs, anything else for non-separable costs
 
-random.seed(3)
-np.random.seed(56)
+# 3
+# 56
+random.seed(4)
+np.random.seed(2)
 
 q0 = np.random.rand(n, m)
 
@@ -115,17 +121,21 @@ sample = 18
 cap = np.linspace(2, 37, num=sample)
 h = 0
 w = np.zeros(sample)
+# w2 = np.zeros(sample)
 wm = np.zeros(sample)
 links = np.zeros((l, sample))
 peq = np.zeros((m, sample))
+# peq2 = np.zeros((m, sample))
 fe = np.zeros((l, sample))
 for i in cap:
     links[:, h], w[h], ft, peq[:, h], d, wm[h] = ss.capopt(i)
+    #   solnew, peq2[:, h], d2, w2[h] = ss.equilibrium2(i)
     fe[:, h] = ft[1]
     h = h + 1
 
 r = B @ fe
 diff = wm - w
+# diff2 = w - w2
 
 plt.figure()
 plt.plot(cap, w, label='Welfare')
@@ -163,3 +173,36 @@ eqs, peqs, ds, ws = ss.equilibrium(fl)
 lt, wt, ftt, peqt, dt, wmt = ss.capopt(130)
 
 # %%
+# fig = plt.figure()
+# ax1 = fig.add_subplot(111)
+# lines = ax1.plot(cap, peq.T, label='Open values')
+# fig.set_size_inches(3.16, 1.8, forward=True)
+# plt.xlabel(r'$\theta$')
+# ax1.set_ylabel(r'$\phi^*$', rotation=0)
+# plt.savefig('test.pgf')
+# plt.show()
+#
+#
+# fig = plt.figure()
+# ax1 = fig.add_subplot(111)
+# ax1.plot(cap, w, label=r'$w_e(\theta)$')
+# ax1.plot(cap, wm, label=r'$w_m(\theta)$')
+# ax1.legend()
+# fig.set_size_inches(3.16, 1.8, forward=True)
+# plt.xlabel(r'$\theta$')
+# #ax1.set_ylabel(r'$\phi^*$', rotation=0)
+# plt.savefig('test.pgf')
+# plt.show()
+#
+#
+# fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+# #fig.suptitle('Aligning x-axis using sharex')
+# ax1.plot(cap, w, label=r'$w_e(\theta)$')
+# ax1.plot(cap, wm, label=r'$w_m(\theta)$')
+# ax2.plot(cap, peq.T, label='Open values')
+# plt.xlabel(r'$\theta$')
+# ax2.set_ylabel(r'$\phi^*$', rotation=0)
+# ax1.legend()
+# fig.set_size_inches(3.16, 3.7, forward=True)
+# plt.savefig('test.pgf')
+# plt.show()
