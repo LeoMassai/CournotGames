@@ -17,15 +17,15 @@ from CournotModels import (cournot1, generate_connected_graph, incidence_matrix,
 
 # 3
 # 0
-random.seed(13)
-np.random.seed(44)
+random.seed(3)
+np.random.seed(0)
 
 # 9, 7, 14
 
 # Set the number of nodes and links
-n = 14  # producers
-m = 8  # markets (nodes)
-l = 16  # links
+n = 9  # producers
+m = 7  # markets (nodes)
+l = 14  # links
 
 # Generate the random connected graph
 G = generate_connected_directed_graph(m, l)
@@ -60,8 +60,8 @@ sep = 1  # put 1 if you want separable production costs, anything else for non-s
 
 # 3
 # 56
-random.seed(4)
-np.random.seed(2)
+random.seed(3)
+np.random.seed(56)
 
 q0 = np.random.rand(n, m)
 
@@ -168,9 +168,25 @@ plt.show()
 
 # %%
 fl = links[:, -1]
-eqs, peqs, ds, ws = ss.equilibrium(fl)
+eqs, peqs, ds, ws = ss.equilibrium(140 * np.ones(l))
+f = eqs[1]
+qsim=eqs[0]
 
 lt, wt, ftt, peqt, dt, wmt = ss.capopt(130)
+
+qteor = np.linalg.inv(H @ np.diag(b) @ H.T + np.diag(np.diag(H @ np.diag(b) @ H.T)) + np.diag(2 * cost)) @ (
+        H @ a - H @ np.diag(b) @ B @ f)
+
+peq = a - b * (B @ f + H.T @ qteor)
+
+peq2 = a - b * (B @ f + H.T @ qsim)
+
+du = H @ (a - np.diag(b) @ (B @ f + H.T @ qsim)) - np.diag(np.diag(H @ np.diag(b) @ H.T)) @ qsim - np.diag(
+    2 * cost) @ qsim
+
+u=np.diag(qteor)@H @ (a - np.diag(b) @ (B @ f + H.T @ qteor))-cost*np.square(qteor)
+
+u2=np.diag(qsim)@H @ (a - np.diag(b) @ (B @ f + H.T @ qsim))-cost*np.square(qsim)
 
 # %%
 # fig = plt.figure()

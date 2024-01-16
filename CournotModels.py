@@ -8,8 +8,8 @@ import random
 import numpy as np
 
 # 3,0
-random.seed(4)
-np.random.seed(7)
+random.seed(3)
+np.random.seed(0)
 
 
 def generate_row_stochastic_matrix(n, m):
