@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Massai
+    given-names: Leonardo
+    orcid: https://orcid.org/my-orcid?orcid=0000-0002-3219-5557
+title: "Networked Cournot Competition"
+version: 1.0.4
+identifiers:
+  - type: doi
+date-released: 2023-08-11
