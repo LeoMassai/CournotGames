@@ -214,11 +214,10 @@ class cournot1:
         f = cp.Variable(l)
         q = cp.Variable(n)
         objective = cp.Maximize(cp.sum(cp.multiply(a, (B @ f + H.T @ q))
-                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q))) -
-                                       cp.sum(cp.multiply(cost, cp.square(q)))) -
+                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q)))) -
+                                cp.sum(cp.multiply(cost, cp.square(q))) -
                                 1 / 2 * cp.sum(cp.multiply(b, H.T @ cp.square(q))))
-        constraints = [0 <= q, 0 <= f,
-                       f <= c]
+        constraints = [0 <= q, 0 <= f, f <= c]
         prob = cp.Problem(objective, constraints)
         qs = prob.solve()
         fo = f.value
@@ -245,8 +244,8 @@ class cournot1:
         f = cp.Variable(l)
         q = cp.Variable(n)
         objective = cp.Maximize(cp.sum(cp.multiply(a, (B @ f + H.T @ q))
-                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q))) -
-                                       cp.sum(cp.multiply(cost, cp.square(q)))) -
+                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q)))) -
+                                       cp.sum(cp.multiply(cost, cp.square(q))) -
                                 1 / 2 * cp.sum(cp.multiply(b, H.T @ cp.square(q))))
         constraints = [0 <= q, 0 <= f,
                        cp.sum(f) <= theta]
@@ -308,8 +307,8 @@ class cournot1:
         q = cp.Variable(n)
 
         objective = cp.Maximize(cp.sum(cp.multiply(a, (B @ f + H.T @ q))
-                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q))) -
-                                       cp.sum(cp.multiply(cost, cp.square(q)))))
+                                       - cp.multiply(b / 2, cp.square((B @ f + H.T @ q)))) -
+                                       cp.sum(cp.multiply(cost, cp.square(q))))
         constraints = [0 <= q, 0 <= f, cp.sum(f) <= theta]
         prob = cp.Problem(objective, constraints)
         wm = prob.solve()
