@@ -166,35 +166,51 @@ fig.set_size_inches(3.16, 3.5, forward=True)
 plt.savefig('test.pgf')
 plt.show()
 
-# %%
 fl = links[:, -1]
+# %%
+
 eqs, peqs, ds, ws = ss.equilibrium(130 * np.ones(l))
 f = eqs[1]
 qsim = eqs[0]
 
-lt, wt, ftt, peqt, dt, wmt = ss.capopt(130)
+lt, wt, ftt, peqt, dt, wmt, solm = ss.capopt(130)
 
-# quantity maximizer when there is no capacity constraint (theta goes to infinity)
-qteor = np.linalg.inv(np.diag(H @ b) @ H @ H.T + np.diag(H @ b) + np.diag(2 * cost)) @ (
-        H @ a - np.diag(H @ b) @ H @ B @ f)
-
-qteor2 = np.linalg.inv(H @ np.diag(b) @ H.T + np.diag(H @ b) + np.diag(2 * cost)) @ (
-        H @ a - H @ np.diag(b) @ B @ f)
-
-# flow maximizer when there is no capacity constraint (theta goes to infinity)
-
+# computations of optimal nodal quantities when there is no capacity constraint (theta goes to infinity)
 aa = B.T @ np.diag(b) @ B
-bb = B.T @ a - B.T @ np.diag(b) @ H.T @ qteor
 
-fteor = np.linalg.pinv(aa) @ bb + (np.eye(l) - aa @ np.linalg.pinv(aa)) @ (5 * np.random.rand(l))
+# r=Bf at equilibrium (bfe)
 
-aa2 = B.T @ np.diag(b)
+Btilde = B @ (np.linalg.pinv(aa)) @ B.T
+Htildee = H.T @ np.linalg.inv(np.diag(H @ b) @ H @ H.T + np.diag(H @ b) + np.diag(2 * cost)) @ H
 
-bfteor = B @ (np.eye(l) - aa @ np.linalg.pinv(aa)) @ (5 * np.random.rand(l))
+bfe = np.linalg.inv(np.eye(m) - Btilde @ np.diag(b) @ Htildee @ np.diag(b)) @ Btilde @ (
+        np.eye(m) - np.diag(b) @ Htildee) @ a
 
-bff = B @ fteor
+besim = B @ eqs[1]
 
-pteor = a - np.diag(b) @ (B @ fteor + H.T @ qteor)
+# r=Bf not at equilibrium (bfn)
+
+
+Htilde = H.T @ np.linalg.inv(np.diag(H @ b) @ H @ H.T + np.diag(2 * cost)) @ H
+
+bfn = np.linalg.inv(np.eye(m) - Btilde @ np.diag(b) @ Htilde @ np.diag(b)) @ Btilde @ (
+        np.eye(m) - np.diag(b) @ Htilde) @ a
+
+#  computations of quantity maximizer when there is no capacity constraint (theta goes to infinity)
+
+# qteor = np.linalg.inv(np.diag(H @ b) @ H @ H.T + np.diag(H @ b) + np.diag(2 * cost)) @ (
+# H @ a - np.diag(H @ b) @ H @ B @ f)
+
+# q at equilibrium
+
+qe = np.linalg.inv(H @ np.diag(b) @ H.T + np.diag(H @ b) + np.diag(2 * cost)) @ (
+        H @ a - H @ np.diag(b) @ bfe)  # optimal quantity at equilibrium
+
+# q not at equilibrium
+
+qn = np.linalg.inv(H @ np.diag(b) @ H.T + np.diag(2 * cost)) @ (H @ a - np.diag(H @ b) @ H @ B @ solm[1])  #
+# optimal quantity not at equilibrium
+
 
 # %%
 # fig = plt.figure()

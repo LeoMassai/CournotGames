@@ -312,8 +312,9 @@ class cournot1:
         constraints = [0 <= q, 0 <= f, cp.sum(f) <= theta]
         prob = cp.Problem(objective, constraints)
         wm = prob.solve()
+        solm = np.array((q.value, f.value), dtype=object)  # Maximizer
 
-        return result.x, -result.fun, sol, peq, d, wm
+        return result.x, -result.fun, sol, peq, d, wm, solm
 
 
 class cournotStack:
